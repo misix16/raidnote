@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Macierze dyskowe RAID – rozbudowana notatka</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+
+<header class="header">
+    <div class="nav">
+        <div class="nav-left">
+            <div class="logo">RAID<span>Lab</span></div>
+            <div class="nav-subtitle">Notatka, ściąga i mini‑laboratorium RAID</div>
+        </div>
+        <div class="nav-center">
+            <a href="#sekcja-wstep" class="nav-link">Wstęp</a>
+            <a href="#sekcja-poziomy" class="nav-link">Poziomy RAID</a>
+            <a href="#sekcja-porownanie" class="nav-link">Porównanie</a>
+            <a href="#sekcja-scenariusze" class="nav-link">Scenariusze</a>
+            <a href="#sekcja-lab" class="nav-link">Lab</a>
+        </div>
+        <div class="nav-right">
+            <button id="theme-toggle" class="btn-ghost">Tryb: ciemny</button>
+        </div>
+    </div>
+</header>
+
+<main class="layout">
+    <section class="layout-main">
+        <section class="card hero" id="sekcja-wstep">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Macierze dyskowe RAID</h1>
+                    <p class="hero-lead">
+                        RAID łączy wiele fizycznych dysków w logiczną całość, aby zwiększyć
+                        wydajność, bezpieczeństwo danych lub jedno i drugie. Ta strona jest
+                        notatką, ściągą i małym laboratorium do eksperymentów.
+                    </p>
+                    <div class="hero-pills">
+                        <div class="pill">RAID 0</div>
+                        <div class="pill">RAID 1</div>
+                        <div class="pill">RAID 5</div>
+                        <div class="pill">RAID 6</div>
+                        <div class="pill">RAID 10</div>
+                    </div>
+                </div>
+                <div class="hero-panel">
+                    <div class="hero-panel-header">
+                        <div class="hero-label">Szybki wybór poziomu RAID</div>
+                        <div class="hero-mini">(podstawowy konfigurator)</div>
+                    </div>
+                    <div class="hero-form">
+                        <div class="field">
+                            <label for="input-disks">Liczba dysków</label>
+                            <input type="number" id="input-disks" min="1" max="24" value="4">
+                        </div>
+                        <div class="field">
+                            <label for="input-priority">Priorytet</label>
+                            <select id="input-priority">
+                                <option value="performance">Wydajność</option>
+                                <option value="safety">Bezpieczeństwo</option>
+                                <option value="balanced" selected>Balans</option>
+                            </select>
+                        </div>
+                        <button id="btn-suggest" class="btn-primary">Zaproponuj poziom RAID</button>
+                        <div id="suggestion-output" class="suggestion-output"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" id="sekcja-poziomy">
+            <div class="section-header">
+                <h2>Poziomy RAID – teoria i wizualizacja</h2>
+                <div class="section-filter">
+                    <button class="chip chip-active" data-raid-filter="all">Wszystkie</button>
+                    <button class="chip" data-raid-filter="basic">Podstawowe</button>
+                    <button class="chip" data-raid-filter="advanced">Bardziej zaawansowane</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab tab-active" data-tab="tab-opis">Opis</button>
+                <button class="tab" data-tab="tab-diagramy">Diagramy</button>
+                <button class="tab" data-tab="tab-plusminus">Plusy i minusy</button>
+            </div>
+
+            <div class="tabs-content">
+                <div class="tab-panel tab-panel-active" id="tab-opis">
+                    <div class="raid-grid">
+                        <article class="raid-card" data-raid-type="basic">
+                            <div class="raid-card-header">
+                                <h3>RAID 0</h3>
+                                <span class="badge badge-performance">Wydajność</span>
+                            </div>
+                            <p>
+                                RAID 0 wykorzystuje striping: dane są dzielone na bloki i rozrzucane po wszystkich
+                                dyskach w macierzy. Dzięki temu można czytać i zapisywać dane równolegle,
+                                co znacząco zwiększa wydajność. Nie ma jednak żadnej redundancji –
+                                awaria jednego dysku oznacza utratę całości danych.
+                            </p>
+                            <div class="raid-meta">
+                                <span>Min. dysków: 2</span>
+                                <span>Pojemność: 100%</span>
+                                <span>Redundancja: brak</span>
+                            </div>
+                        </article>
+
+                        <article class="raid-card" data-raid-type="basic">
+                            <div class="raid-card-header">
+                                <h3>RAID 1</h3>
+                                <span class="badge badge-safety">Bezpieczeństwo</span>
+                            </div>
+                            <p>
+                                RAID 1 opiera się na mirroringu: identyczne dane są zapisywane na co najmniej
+                                dwóch dyskach. Jeżeli jeden dysk ulegnie awarii, system może kontynuować
+                                pracę na drugim. Zapis jest ograniczony szybkością najwolniejszego dysku,
+                                ale odczyt może zyskać dzięki równoległości.
+                            </p>
+                            <div class="raid-meta">
+                                <span>Min. dysków: 2</span>
+                                <span>Pojemność: 50%</span>
+                                <span>Redundancja: 1 dysk</span>
+                            </div>
+                        </article>
+
+                        <article class="raid-card" data-raid-type="advanced">
+                            <div class="raid-card-header">
+                                <h3>RAID 5</h3>
+                                <span class="badge badge-balanced">Balans</span>
+                            </div>
+                            <p>
+                                RAID 5 łączy striping z rozłożoną parzystością. Parzystość jest liczona
+                                dla bloków danych i przechowywana na różnych dyskach. Macierz jest w stanie
+                                przetrwać awarię jednego dysku. Odczyt jest bardzo szybki, zapis wolniejszy
+                                niż w RAID 0 ze względu na konieczność wyliczenia parzystości.
+                            </p>
+                            <div class="raid-meta">
+                                <span>Min. dysków: 3</span>
+                                <span>Pojemność: (n − 1)/n</span>
+                                <span>Redundancja: 1 dysk</span>
+                            </div>
+                        </article>
+
+                        <article class="raid-card" data-raid-type="advanced">
+                            <div class="raid-card-header">
+                                <h3>RAID 6</h3>
+                                <span class="badge badge-safety">Duża redundancja</span>
+                            </div>
+                            <p>
+                                RAID 6 to rozwinięcie RAID 5 z podwójną parzystością. Macierz może przetrwać
+                                awarię dwóch dysków jednocześnie. Wydajność odczytu jest wciąż dobra, ale zapis
+                                jest wyraźnie wolniejszy przez dodatkowe obliczenia i zapisy parzystości.
+                            </p>
+                            <div class="raid-meta">
+                                <span>Min. dysków: 4</span>
+                                <span>Pojemność: (n − 2)/n</span>
+                                <span>Redundancja: 2 dyski</span>
+                            </div>
+                        </article>
+
+                        <article class="raid-card" data-raid-type="advanced">
+                            <div class="raid-card-header">
+                                <h3>RAID 10 (1+0)</h3>
+                                <span class="badge badge-hybrid">Hybrid</span>
+                            </div>
+                            <p>
+                                RAID 10 łączy mirroring i striping. Dyski są najpierw parowane w zestawy
+                                lustrzane (RAID 1), a następnie objęte stripingiem (RAID 0). Zapewnia to
+                                wysoką wydajność i bezpieczeństwo, kosztem połowy dostępnej pojemności.
+                                Idealny dla baz danych i systemów transakcyjnych.
+                            </p>
+                            <div class="raid-meta">
+                                <span>Min. dysków: 4</span>
+                                <span>Pojemność: 50%</span>
+                                <span>Redundancja: zależy od par</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="tab-panel" id="tab-diagramy">
+                    <div class="diagram-grid">
+                        <div class="diagram-card">
+                            <div class="diagram-title">RAID 0</div>
+                            <pre class="diagram">
+Dysk 1: [A1] [A3] [B1] [B3]
+Dysk 2: [A2] [A4] [B2] [B4]
+                            </pre>
+                        </div>
+                        <div class="diagram-card">
+                            <div class="diagram-title">RAID 1</div>
+                            <pre class="diagram">
+Dysk 1: [A] [B] [C] [D]
+Dysk 2: [A] [B] [C] [D]
+                            </pre>
+                        </div>
+                        <div class="diagram-card">
+                            <div class="diagram-title">RAID 5</div>
+                            <pre class="diagram">
+Dysk 1: [A1] [A2] [P3] [B1]
+Dysk 2: [A3] [P2] [B2] [B3]
+Dysk 3: [P1] [A4] [B4] [P4]
+                            </pre>
+                        </div>
+                        <div class="diagram-card">
+                            <div class="diagram-title">RAID 6</div>
+                            <pre class="diagram">
+Dysk 1: [A1] [A2] [P3] [Q1]
+Dysk 2: [A3] [P2] [Q3] [B2]
+Dysk 3: [P1] [Q2] [B3] [B4]
+Dysk 4: [Q4] [A4] [B1] [P4]
+                            </pre>
+                        </div>
+                        <div class="diagram-card">
+                            <div class="diagram-title">RAID 10</div>
+                            <pre class="diagram">
+Para 1 (RAID 1):
+  Dysk 1: [A1][B1][C1]
+  Dysk 2: [A1][B1][C1]
+
+Para 2 (RAID 1):
+  Dysk 3: [A2][B2][C2]
+  Dysk 4: [A2][B2][C2]
+
+RAID 0 nad parami:
+  Dane: [A1|A2] [B1|B2] [C1|C2]
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-panel" id="tab-plusminus">
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <button class="accordion-header">
+                                <span>RAID 0</span>
+                                <span class="accordion-indicator">+</span>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="two-col">
+                                    <ul class="list-good">
+                                        <li>Bardzo wysoka wydajność odczytu i zapisu</li>
+                                        <li>Pełne wykorzystanie pojemności wszystkich dysków</li>
+                                        <li>Prosta implementacja</li>
+                                    </ul>
+                                    <ul class="list-bad">
+                                        <li>Brak jakiejkolwiek redundancji</li>
+                                        <li>Awarie jednego dysku niszczy całą macierz</li>
+                                        <li>Nie nadaje się na dane krytyczne</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <button class="accordion-header">
+                                <span>RAID 1</span>
+                                <span class="accordion-indicator">+</span>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="two-col">
+                                    <ul class="list-good">
+                                        <li>Wysoka odporność na awarię jednego dysku</li>
+                                        <li>Prosty do zrozumienia i zarządzania</li>
+                                        <li>Dobry odczyt przy wielu zapytaniach</li>
+                                    </ul>
+                                    <ul class="list-bad">
+                                        <li>Efektywna pojemność to połowa sumy dysków</li>
+                                        <li>Wydajność zapisu ograniczona przez duplikację</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <button class="accordion-header">
+                                <span>RAID 5</span>
+                                <span class="accordion-indicator">+</span>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="two-col">
+                                    <ul class="list-good">
+                                        <li>Dobra równowaga pojemność/wydajność/bezpieczeństwo</li>
+                                        <li>Ochrona przy awarii jednego dysku</li>
+                                        <li>Popularny w serwerach plików</li>
+                                    </ul>
+                                    <ul class="list-bad">
+                                        <li>Wolniejszy zapis przez wyliczanie parzystości</li>
+                                        <li>Odbudowa macierzy po awarii jest czasochłonna</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <button class="accordion-header">
+                                <span>RAID 6</span>
+                                <span class="accordion-indicator">+</span>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="two-col">
+                                    <ul class="list-good">
+                                        <li>Odporność na awarię dwóch dysków</li>
+                                        <li>Dobre do dużych macierzy</li>
+                                    </ul>
+                                    <ul class="list-bad">
+                                        <li>Większy narzut na pojemność niż RAID 5</li>
+                                        <li>Jeszcze wolniejszy zapis niż RAID 5</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <button class="accordion-header">
+                                <span>RAID 10</span>
+                                <span class="accordion-indicator">+</span>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="two-col">
+                                    <ul class="list-good">
+                                        <li>Wysoka wydajność i bezpieczeństwo</li>
+                                        <li>Lepsze zachowanie przy odbudowie niż RAID 5/6</li>
+                                        <li>Dobry dla baz danych</li>
+                                    </ul>
+                                    <ul class="list-bad">
+                                        <li>Efektywna pojemność tylko 50%</li>
+                                        <li>Wymaga co najmniej czterech dysków</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" id="sekcja-porownanie">
+            <div class="section-header">
+                <h2>Tabela porównawcza poziomów RAID</h2>
+                <div class="section-description">
+                    Zestawienie parametrów: pojemność, tolerancja awarii, orientacyjna wydajność. Warto do tego
+                    dodać cenę dysków i realne potrzeby projektu.
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="raid-table">
+                    <thead>
+                        <tr>
+                            <th>Poziom</th>
+                            <th>Min. dysków</th>
+                            <th>Utracone dyski przy awarii</th>
+                            <th>Efektywna pojemność</th>
+                            <th>Wydajność odczytu</th>
+                            <th>Wydajność zapisu</th>
+                            <th>Typowe zastosowania</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RAID 0</td>
+                            <td>2</td>
+                            <td>0</td>
+                            <td>100%</td>
+                            <td>Bardzo wysoka</td>
+                            <td>Bardzo wysoka</td>
+                            <td>Dyski robocze, gry, cache</td>
+                        </tr>
+                        <tr>
+                            <td>RAID 1</td>
+                            <td>2</td>
+                            <td>1</td>
+                            <td>50%</td>
+                            <td>Średnia–wysoka</td>
+                            <td>Średnia</td>
+                            <td>Systemy krytyczne, serwery</td>
+                        </tr>
+                        <tr>
+                            <td>RAID 5</td>
+                            <td>3</td>
+                            <td>1</td>
+                            <td>(n − 1)/n</td>
+                            <td>Wysoka</td>
+                            <td>Średnia</td>
+                            <td>Serwery plików, NAS</td>
+                        </tr>
+                        <tr>
+                            <td>RAID 6</td>
+                            <td>4</td>
+                            <td>2</td>
+                            <td>(n − 2)/n</td>
+                            <td>Wysoka</td>
+                            <td>Niższa</td>
+                            <td>Duże macierze, krytyczne dane</td>
+                        </tr>
+                        <tr>
+                            <td>RAID 10</td>
+                            <td>4</td>
+                            <td>1 w każdej parze</td>
+                            <td>50%</td>
+                            <td>Bardzo wysoka</td>
+                            <td>Wysoka</td>
+                            <td>Bazy danych, systemy transakcyjne</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card" id="sekcja-scenariusze">
+            <div class="section-header">
+                <h2>Dobór RAID do scenariusza</h2>
+                <div class="section-description">
+                    Wybierz scenariusz, żeby zobaczyć sugerowany poziom RAID. To taka skrócona ściąga.
+                </div>
+            </div>
+            <div class="scenario-grid">
+                <button class="scenario" data-scenario="dom">
+                    <div class="scenario-title">Domowy NAS</div>
+                    <div class="scenario-text">Backup zdjęć, filmów, dokumentów</div>
+                </button>
+                <button class="scenario" data-scenario="baza">
+                    <div class="scenario-title">Baza danych</div>
+                    <div class="scenario-text">Intensywne operacje zapisu/odczytu</div>
+                </button>
+                <button class="scenario" data-scenario="video">
+                    <div class="scenario-title">Montaż wideo</div>
+                    <div class="scenario-text">Duże pliki, ogromne transfery</div>
+                </button>
+                <button class="scenario" data-scenario="lab">
+                    <div class="scenario-title">Środowisko testowe</div>
+                    <div class="scenario-text">Testowanie konfiguracji, nic krytycznego</div>
+                </button>
+            </div>
+            <div id="scenario-output" class="scenario-output"></div>
+        </section>
+
+        <section class="card" id="sekcja-lab">
+            <div class="section-header">
+                <h2>Laboratorium RAID – przeliczanie pojemności</h2>
+                <div class="section-description">
+                    Tutaj możesz oszacować, ile pojemności zostanie dla danych przy różnych poziomach RAID.
+                    Wyniki są uproszczone, ale wystarczają jako ściąga.
+                </div>
+            </div>
+            <div class="lab-layout">
+                <div class="lab-form">
+                    <div class="field">
+                        <label for="lab-disks">Liczba dysków</label>
+                        <input type="number" id="lab-disks" value="6" min="1" max="24">
+                    </div>
+                    <div class="field">
+                        <label for="lab-size">Pojemność jednego dysku (TB)</label>
+                        <input type="number" id="lab-size" value="4" min="1" max="50" step="0.5">
+                    </div>
+                    <div class="field">
+                        <label for="lab-level">Poziom RAID</label>
+                        <select id="lab-level">
+                            <option value="0">RAID 0</option>
+                            <option value="1">RAID 1</option>
+                            <option value="5">RAID 5</option>
+                            <option value="6">RAID 6</option>
+                            <option value="10">RAID 10</option>
+                        </select>
+                    </div>
+                    <button id="lab-calc" class="btn-primary">Przelicz</button>
+                    <div id="lab-error" class="lab-error"></div>
+                </div>
+                <div class="lab-result">
+                    <div class="lab-result-main">
+                        <div class="lab-result-row">
+                            <span>Całkowita pojemność fizyczna</span>
+                            <span id="lab-total">–</span>
+                        </div>
+                        <div class="lab-result-row">
+                            <span>Pojemność dostępna dla danych</span>
+                            <span id="lab-usable">–</span>
+                        </div>
+                        <div class="lab-result-row">
+                            <span>Strata na redundancję / narzut</span>
+                            <span id="lab-overhead">–</span>
+                        </div>
+                    </div>
+                    <div class="lab-bar">
+                        <div id="lab-bar-data" class="lab-bar-data"></div>
+                        <div id="lab-bar-overhead" class="lab-bar-overhead"></div>
+                    </div>
+                    <div class="lab-caption">
+                        Kolor ciemniejszy to pojemność na dane, jaśniejszy – na redundancję/parzystość.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <aside class="layout-side">
+        <section class="card side-card">
+            <h3>Spis treści</h3>
+            <ul class="toc">
+                <li><a href="#sekcja-wstep">1. Wstęp</a></li>
+                <li><a href="#sekcja-poziomy">2. Poziomy RAID</a></li>
+                <li><a href="#sekcja-porownanie">3. Tabela porównawcza</a></li>
+                <li><a href="#sekcja-scenariusze">4. Scenariusze</a></li>
+                <li><a href="#sekcja-lab">5. Laboratorium RAID</a></li>
+            </ul>
+        </section>
+
+        <section class="card side-card">
+            <h3>Mini‑quiz RAID</h3>
+            <div id="quiz-container"></div>
+            <div id="quiz-progress" class="quiz-progress">
+                <div id="quiz-progress-bar" class="quiz-progress-bar"></div>
+            </div>
+        </section>
+
+        <section class="card side-card">
+            <h3>RAID a kopia zapasowa</h3>
+            <p class="side-text">
+                RAID nie zastępuje kopii zapasowej. Chroni głównie przed awarią dysku, nie przed
+                błędami użytkownika, wirusami, zaszyfrowaniem danych czy pożarem. Backup jest zawsze
+                osobnym tematem.
+            </p>
+        </section>
+    </aside>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
